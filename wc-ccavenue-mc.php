@@ -43,6 +43,9 @@ function init_ccavenue_multicurrency() {
             $this->liveurl  = 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction';
             $this->notify_url = str_replace( 'https:', 'http:', home_url( '/?wc-api%3Dwc_gateway_ccavenue_multicurrency' )  );
 
+
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, 
+						array( $this, 'process_admin_options' ) );
         }
 
 
@@ -86,9 +89,28 @@ function init_ccavenue_multicurrency() {
                 );
 			}
 
+		public function admin_options(){
+			ob_start();
+				echo  ' ' ; 
+				echo  '<h3>'.__('CCAvenue MultiCurrency Payment Gateway', 'bagc_ccavenue_mcg').'</h3>';
+	            echo  '<p>'.__('CCAvenue is a major payment processor in India.');
+                echo  __('This gateway enables merchants to sell to customers outside India in multiple currencies').'</p>';
+	            echo  '<table class="form-table ">';
+	            echo  $this -> generate_settings_html();
+	            echo  '</table>';
+            ob_end_flush();
+        }
+
 
 	}
 
 	endif ; 
 }
+
+function add_bagc_ccavenue_mcg_gateway( $methods ) {
+	$methods[] = 'WC_Gateway_CCAvenue_MultiCurrency'; 
+	return $methods;
+}
+
+add_filter( 'woocommerce_payment_gateways', 'add_bagc_ccavenue_mcg_gateway' );
 
