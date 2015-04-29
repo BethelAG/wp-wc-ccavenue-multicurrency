@@ -62,19 +62,21 @@ function init_ccavenue_multicurrency() {
                 'mcg_title' => array(
                     'title' => __('Title:', 'bagc_ccavenue_mcg'),
                     'type'=> 'text',
-                    'description' => __('This controls the title which the user sees during checkout.', 'bagc_ccavenue_mcg'),
+                    'description' => __('The title which the user sees during checkout.', 'bagc_ccavenue_mcg'),
                     'default' => __('CCAvenue for International Users', 'bagc_ccavenue_mcg')),
 
                 'mcg_description' => array(
                     'title' => __('Description:', 'bagc_ccavenue_mcg'),
                     'type' => 'textarea',
-                    'description' => __('This controls the description which the user sees during checkout.', 'bagc_ccavenue_mcg'),
-                    'default' => __('Pay securely using either your Credit or Debit card or via Internet banking using CCAvenue Secure Servers.', 'bagc_ccavenue_mcg')),
+                    'description' => __('The description which the user sees during checkout.', 'bagc_ccavenue_mcg'),
+                    'default' => __('Pay using either your Credit or Debit card or via Internet Banking 
+                    	using Secure Servers powered by CCAvenue.', 'bagc_ccavenue_mcg')),
 
                 'mcg_merchant_id' => array(
                     'title' => __('Merchant ID', 'bagc_ccavenue_mcg'),
                     'type' => 'text',
-                    'description' => __('This ID (User ID) is available through the "Generate Working Key" option under "Settings and Options" at the CCAvenue Web Portal.')),
+                    'description' => __('This ID (User ID) is available through the "Generate Working Key" 
+                    	option under "Settings and Options" at the CCAvenue Web Portal.')),
                 
                 'mcg_working_key' => array(
                     'title' => __('Working Key', 'bagc_ccavenue_mcg'),
@@ -89,13 +91,13 @@ function init_ccavenue_multicurrency() {
                 );
 			}
 
-		public function admin_options(){
+		public function admin_options() {
 			ob_start();
 				echo  ' ' ; 
 				echo  '<h3>'.__('CCAvenue MultiCurrency Payment Gateway', 'bagc_ccavenue_mcg').'</h3>';
 	            echo  '<p>'.__('CCAvenue is a major payment processor in India.');
                 echo  __('This gateway enables merchants to sell to customers outside India in multiple currencies').'</p>';
-	            echo  '<table class="form-table ">';
+	            echo  '<table class="form-table bagc-ccavenue-mcg-table">';
 	            echo  $this -> generate_settings_html();
 	            echo  '</table>';
             ob_end_flush();
