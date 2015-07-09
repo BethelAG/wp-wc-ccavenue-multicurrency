@@ -28,7 +28,7 @@ function init_ccavenue_multicurrency() {
 
             $this->id           = 'ccavenue_mcg';
             $this->method_title = __('CCAvenue MultiCurrency Gateway', 'bagc_ccavenue_mcg');
-            $this->icon         =  plugins_url( 'images/logo.gif' , __FILE__ );
+            $this->icon         =  plugins_url( 'logo.gif' , __FILE__ );
             $this->has_fields   = false;
             
             $this->init_form_fields();
