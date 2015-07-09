@@ -46,6 +46,7 @@ function init_ccavenue_multicurrency() {
 
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, 
 						array( $this, 'process_admin_options' ) );
+        
         }
 
 
@@ -209,7 +210,7 @@ function init_ccavenue_multicurrency() {
 
 
         // Deprecated fuction
-        function showMessage($content){
+        function showMessage($content) {
         return '<div class="box '.$this -> msg['class'].'-box">'.$this -> msg['message'].'</div>'.$content;
         }
 
@@ -291,26 +292,51 @@ function init_ccavenue_multicurrency() {
             return $form;
         }
 
-
         // Select currency logic
         function mcg_get_currency() {
+            
             return get_woocommerce_currency() ;
+        }
+
+        // Return page list 
+        function get_pages($title = false, $indent = true) {
+                    
+                    $wp_pages = get_pages('sort_column=menu_order');
+                    $page_list = array();
+                    
+                    if ($title) {
+                        $page_list[] = $title;
+                    }
+                    
+                    foreach ($wp_pages as $page) {
+                        $prefix = '';
+                        // show indented child pages?
+                        if ($indent) {
+                            $has_parent = $page->post_parent;
+                            while ($has_parent) {
+                                $prefix .= ' - ';
+                                $next_page = get_page($has_parent);
+                                $has_parent = $next_page->post_parent;
+                            }
+                        }
+
+                        // add to page list array array
+                        $page_list[$page->ID] = $prefix . $page->post_title;
+                    }
+
+                    return $page_list;
         }
 
 
 
-
-
-	}
-
-
-
-
-	endif ; 
+    }
+    // End Class
+    endif ; 
+// End init function
 }
 
 
-
+// Add Gateway to WC
 function add_bagc_ccavenue_mcg_gateway( $methods ) {
 	$methods[] = 'WC_Gateway_CCAvenue_MultiCurrency'; 
 	return $methods;
