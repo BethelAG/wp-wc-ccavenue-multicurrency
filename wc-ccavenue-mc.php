@@ -49,6 +49,7 @@ function init_ccavenue_multicurrency() {
         }
 
 
+        // Admin form fields
         function init_form_fields() {
 
             $this->form_fields = array(
@@ -91,6 +92,8 @@ function init_ccavenue_multicurrency() {
                 );
 			}
 
+
+        // Options for the admin page
 		public function admin_options() {
 			ob_start();
 				echo  ' ' ; 
@@ -126,8 +129,101 @@ function init_ccavenue_multicurrency() {
             );
         }
 
+        // Check server response
+        function check_ccavenue_response() {
+            global $woocommerce;
+
+            $msg['class'] = 'error';
+            $msg['message'] = "Thank you for shopping with us. However, the transaction has been declined. 
+            Please try again later, contact your bank if issue persists.";
+
+            if (isset($_REQUEST['encResp'])) {
+
+                $encResponse = $_REQUEST["encResp"];
+                $rcvdString = decrypt($encResponse, $this->working_key);
+                $decryptValues = array();
+                parse_str($rcvdString, $decryptValues);
+
+                $order_id_time = $decryptValues['order_id'];
+                $order_id = explode('_', $decryptValues['order_id']);
+                $order_id = (int) $order_id[0];
+
+                if ($order_id != '') {
+                    try {
+                        $order = new WC_Order($order_id);
+                        $order_status = $decryptValues['order_status'];
+                        $transauthorised = false;
+                        if ($order->status !== 'completed') {
+                            if ($order_status == "Success") {
+                                $transauthorised = true;
+                                $msg['message'] = "Thank you for shopping with us. Your account has been charged and your transaction is successful. We will be shipping your order to you soon.";
+                                $msg['class'] = 'success';
+                                if ($order->status != 'processing') {
+                                    $order->payment_complete();
+                                    $order->add_order_note('CCAvenue payment successful<br/>Bank Ref Number: ' . $decryptValues['bank_ref_no']);
+                                    $woocommerce->cart->empty_cart();
+                                }
+                            } else if ($order_status === "Aborted") {
+                                $msg['message'] = "Thank you for shopping with us. We will keep you posted regarding the status of your order through e-mail";
+                                $msg['class'] = 'success';
+                            } else if ($order_status === "Failure") {
+                                $msg['class'] = 'error';
+                                $msg['message'] = "Thank you for shopping with us. However, the transaction has been declined
+                                Please try again later, contact your bank if issue persists.";
+                            } else {
+                                $msg['class'] = 'error';
+                                $msg['message'] = "Thank you for shopping with us. However, there was an error with the transaction. Please try again later.";
+                            }
+                            if ($transauthorised == false) {
+                                $order->update_status('failed');
+                                $order->add_order_note('Failed');
+                                $order->add_order_note($this->msg['message']);
+                            }
+                        }
+                    } catch (Exception $e) {
+                        $msg['class'] = 'error';
+                        $msg['message'] = "Thank you for shopping with us. However, there was an error with the transaction. Please try again later.";
+                    }
+                }
+            }
+
+            if (function_exists('wc_add_notice')) {
+
+                wc_add_notice($msg['message'], $msg['class']);
+            
+            } else {
+                if ($msg['class'] == 'success') {
+                    $woocommerce->add_message($msg['message']);
+                } else {
+                    $woocommerce->add_error($msg['message']);
+                }
+                $woocommerce->set_messages();
+            }
+
+            $redirect_url = get_permalink(woocommerce_get_page_id('myaccount'));
+
+            wp_redirect($redirect_url);
+
+            exit;
+        }
+
+
+        // Deprecated fuction
+        function showMessage($content){
+        return '<div class="box '.$this -> msg['class'].'-box">'.$this -> msg['message'].'</div>'.$content;
+        }
+        
+
+
+
+
+
+
 
 	}
+
+
+
 
 	endif ; 
 }
