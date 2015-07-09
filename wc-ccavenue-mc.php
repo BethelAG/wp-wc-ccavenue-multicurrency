@@ -346,6 +346,8 @@ add_filter( 'woocommerce_payment_gateways', 'add_bagc_ccavenue_mcg_gateway' );
 
 // CCAvenue Security functions 
 
+if( !function_exists('encrypt') ): 
+
 function encrypt($plainText,$key)
 {
     $secretKey = hextobin(md5($key));
@@ -360,6 +362,11 @@ function encrypt($plainText,$key)
   } 
   return bin2hex($encryptedText);
 }
+
+endif ; 
+
+if( !function_exists('decrypt') ): 
+
 function decrypt($encryptedText,$key)
 {
     $secretKey = hextobin(md5($key));
@@ -373,9 +380,15 @@ function decrypt($encryptedText,$key)
     return $decryptedText;
 }
 
+endif ; 
+
+if( !function_exists('pkcs5_pad') ): 
+
 function pkcs5_pad ($plainText, $blockSize)
 {
     $pad = $blockSize - (strlen($plainText) % $blockSize);
     return $plainText . str_repeat(chr($pad), $pad);
 }
+
+endif ; 
 
