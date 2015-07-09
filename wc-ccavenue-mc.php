@@ -212,9 +212,90 @@ function init_ccavenue_multicurrency() {
         function showMessage($content){
         return '<div class="box '.$this -> msg['class'].'-box">'.$this -> msg['message'].'</div>'.$content;
         }
-        
+
+        // Create and send form to gateway
+        public function generate_ccavenue_form($order_id) {
+            global $woocommerce;
+            $order = new WC_Order($order_id);
+            $order_id = $order_id . '_' . date("ymds");
+            $ccavenue_args = array(
+                'merchant_id' => $this->merchant_id,
+                'amount' => $order->order_total,
+                'order_id' => $order_id,
+                'redirect_url' => $this->notify_url,
+                'cancel_url' => $this->notify_url,
+                'billing_name' => $order->billing_first_name . ' ' . $order->billing_last_name,
+                'billing_address' => mrovaRemoveCharacters(trim($order->billing_address_1, ',')),
+                'billing_country' => wc()->countries->countries[$order->billing_country],
+                'billing_state' => $order->billing_state,
+                'billing_city' => $order->billing_city,
+                'billing_zip' => $order->billing_postcode,
+                'billing_tel' => $order->billing_phone,
+                'billing_email' => $order->billing_email,
+                'delivery_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
+                'delivery_address' => mrovaRemoveCharacters($order->shipping_address_1),
+                'delivery_country' => $order->shipping_country,
+                'delivery_state' => $order->shipping_state,
+                'delivery_tel' => '',
+                'delivery_city' => $order->shipping_city,
+                'delivery_zip' => $order->shipping_postcode,
+                'language' => 'EN',
+                'currency' => mcg_get_currency(),
+            );
+
+            foreach ($ccavenue_args as $param => $value) {
+                $paramsJoined[] = "$param=$value";
+            }
+            $merchant_data = implode('&', $paramsJoined);
+            $encrypted_data = encrypt($merchant_data, $this->working_key);
+            $ccavenue_args_array = array();
+            $ccavenue_args_array[] = "<input type='hidden' name='encRequest' value='$encrypted_data'/>";
+            $ccavenue_args_array[] = "<input type='hidden' name='access_code' value='{$this->access_code}'/>";
 
 
+            $form = '<form action="' . esc_url($this->liveurl) . '" method="post" id="ccavenue_payment_form" target="_top">' . implode('', $ccavenue_args_array) . 
+                        ' <!-- Button Fallback -->
+                                <div class="payment_buttons">
+                                 <input type="submit" class="button alt" id="submit_ccavenue_payment_form" value="' . __('Pay with Credit Card via CCAvenue', 'woocommerce') . '" /> 
+                                 <a class="button cancel" href="' . esc_url($order->get_cancel_order_url()) . '">' . __('Cancel order &amp; restore cart', 'woocommerce') . '</a>
+                                </div>
+                            <script type="text/javascript">
+                                jQuery(".payment_buttons").hide();
+                            </script>
+                    </form>';
+
+            wc_enqueue_js('
+                $.blockUI({
+                    message: "' . esc_js(__('Thank you for your order. We are now redirecting you to CCAvenue to make payment.', 'woocommerce')) . '",
+                    baseZ: 99999,
+                    overlayCSS:
+                    {
+                        background: "#fff",
+                        opacity: 0.6
+                    },
+                    css: {
+                        padding:        "20px",
+                        zindex:         "9999999",
+                        textAlign:      "center",
+                        color:          "#555",
+                        border:         "3px solid #aaa",
+                        backgroundColor:"#fff",
+                        cursor:         "wait",
+                        lineHeight:     "24px",
+                    }
+                });
+            jQuery("#submit_ccavenue_payment_form").click();
+            ');
+
+
+            return $form;
+        }
+
+
+        // Select currency logic
+        function mcg_get_currency() {
+            return get_woocommerce_currency() ;
+        }
 
 
 
