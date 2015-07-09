@@ -104,10 +104,35 @@ function init_ccavenue_multicurrency() {
         }
 
 
+        function payment_fields() {
+            if ($this->description) {
+                echo wpautop(wptexturize($this->description));
+            }
+        }
+
+        // Reciept page
+        function receipt_page($order) {
+            echo '<p>' . __('Thank you for your order, please click the button below to pay with you credit card using CCAvenue.', 'bagc_ccavenue_mcg') . '</p>';
+            echo $this->generate_ccavenue_form($order);
+        }
+
+
+        // Process payment
+        function process_payment($order_id) {
+            $order = new WC_Order($order_id);
+            return array(
+                'result' => 'success',
+                'redirect' => $order->get_checkout_payment_url(true),
+            );
+        }
+
+
 	}
 
 	endif ; 
 }
+
+
 
 function add_bagc_ccavenue_mcg_gateway( $methods ) {
 	$methods[] = 'WC_Gateway_CCAvenue_MultiCurrency'; 
